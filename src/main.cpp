@@ -37,11 +37,13 @@ void setup_dht()
 
 float humidity = NAN;
 float temperature = NAN;
+const char* status = "Initializing";
 
 void read_dht_values()
 {
     humidity = dht.getHumidity();
     temperature = dht.getTemperature();
+    status = dht.getStatusString();
 }
 
 void publish_data()
@@ -49,7 +51,10 @@ void publish_data()
     Serial.print("Temperature: ");
     Serial.print(temperature);
     Serial.print(", Humidity: ");
-    Serial.println(humidity);
+    Serial.print(humidity);
+    Serial.print(", Status: ");
+    Serial.print(status);
+    Serial.println();
 }
 
 void setup_wifi() {}
