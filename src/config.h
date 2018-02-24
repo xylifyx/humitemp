@@ -9,10 +9,8 @@
 #define  MQTT_PASSWORD    "37e1300e78ff4d7baf01ef9a45febe21"
 #define  MQTT_CLIENT_ID   "humitemp1"
 
-#define DHT_PIN 4
+#define DHT_PIN 2
 
 //#define  MQTT_PREFIX      "xylifyx/feeds/"
 #define  TEMP_TOPIC       "xylifyx/feeds/humitemp1"
 #define  HUMI_TOPIC       "xylifyx/feeds/humitemp1"
-
-#define DHT_PIN 4
