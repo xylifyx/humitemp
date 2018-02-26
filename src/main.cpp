@@ -9,7 +9,7 @@ extern void setup_wifi();
 extern void setup_mqtt();
 extern void read_dht_values();
 extern void publish_data();
-
+extern void reconnect();
 WiFiClient espClient;
 PubSubClient client(espClient);
 DHT dht;
@@ -25,9 +25,10 @@ void setup()
 
 void loop()
 {
-    delay(1000);
+    delay(5000);
     read_dht_values();
     publish_data();
+    client.loop();
 }
 
 // Initialize DHT sensor.
@@ -50,6 +51,7 @@ char buffer[50];
 
 void publish_data()
 {
+
     Serial.print("Temperature: ");
     Serial.print(temperature);
     Serial.print(", Humidity: ");
@@ -58,9 +60,11 @@ void publish_data()
     Serial.print(status);
     Serial.println();
 
-    sprintf(buffer, "{\"value\":\"%f\"}", humidity);
-    client.publish(TEMP_TOPIC, buffer);
-    Serial.println(buffer);
+    reconnect();
+    sprintf(buffer, "{\"value\":%f}", humidity);
+    Serial.println(client.publish(HUMI_TOPIC, buffer));
+    sprintf(buffer, "{\"value\":%f}", temperature);
+    Serial.println(client.publish(TEMP_TOPIC, buffer));
 }
 
 void setup_dht()
@@ -97,7 +101,7 @@ void reconnect()
     {
         Serial.print("Connecting to MQTT server ");
         Serial.println(MQTT_HOST);
-
+        client.setServer(MQTT_HOST, 1883);
         if (client.connect(MQTT_CLIENT_ID, MQTT_USERNAME, MQTT_PASSWORD))
         {
             Serial.println("Connected");
