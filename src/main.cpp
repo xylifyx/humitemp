@@ -1,4 +1,5 @@
 #include <Arduino.h>
+// #define CAYENNE_DEBUG
 #define CAYENNE_PRINT Serial
 #include <CayenneMQTTESP8266.h>
 #include <DHT.h>
@@ -16,21 +17,22 @@
 #define PIN_D2 4
 
 DHT dht;
-int lastMillis;
 
 void setup()
 {
     Serial.begin(9600);
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, HIGH);
 
     Cayenne.begin(MQTT_USERNAME, MQTT_PASSWORD, MQTT_CLIENT_ID, WIFI_SSID, WIFI_PASSWORD);
-    pinMode(LED_BUILTIN, OUTPUT);
-
-    lastMillis = 0;
 
     dht.setup(PIN_D2, DHT::DHT22);
 }
 
-void checkSensors()
+static unsigned long lastPoll;
+
+// Default function for sending sensor data at intervals to Cayenne
+void pullSensors()
 {
     digitalWrite(LED_BUILTIN, LOW);
 
@@ -38,9 +40,8 @@ void checkSensors()
     float humidity = dht.getHumidity();
     const char *status = dht.getStatusString();
 
-    Serial.printf("DHT22: status=%s temp=%f humi=%f ", status, temperature, humidity);
-    Serial.println();
-
+    CAYENNE_LOG("DHT22: status=%s temp=%f humi=%f ", status, temperature, humidity);
+    
     if (!isnan(temperature))
     {
         Cayenne.celsiusWrite(1, temperature);
@@ -54,14 +55,18 @@ void checkSensors()
     digitalWrite(LED_BUILTIN, HIGH);
 }
 
+CAYENNE_IN_DEFAULT()
+{
+    CAYENNE_LOG("Channel %u, value %s", request.channel, getValue.asString());
+    //Process message here. If there is an error set an error message using getValue.setError(), e.g getValue.setError("Error message");
+}
+
 void loop()
 {
     Cayenne.loop();
-
-    //Publish data every 10 seconds (10000 milliseconds). 
-    if (millis() - lastMillis > 10000)
+    if (millis() - lastPoll > 15000)
     {
-        lastMillis = millis();
-        checkSensors();
+        pullSensors();
+        lastPoll = millis();
     }
 }
