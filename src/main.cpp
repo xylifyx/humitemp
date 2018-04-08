@@ -32,6 +32,8 @@ void setup()
 
 void checkSensors()
 {
+    digitalWrite(LED_BUILTIN, LOW);
+
     float temperature = dht.getTemperature();
     float humidity = dht.getHumidity();
     const char *status = dht.getStatusString();
@@ -48,6 +50,8 @@ void checkSensors()
     {
         Cayenne.virtualWrite(2, humidity, TYPE_RELATIVE_HUMIDITY, UNIT_PERCENT);
     }
+
+    digitalWrite(LED_BUILTIN, HIGH);
 }
 
 void loop()
